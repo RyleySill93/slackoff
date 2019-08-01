@@ -25,7 +25,7 @@ SECRET_KEY = '7i88+by@=%oqj2gwr_e_*t)5lyhx*w-@lrhq0thgz4g(+mp!i!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['fierce-wave-95788.herokuapp.com']
 
 
 # Application definition
@@ -79,6 +79,7 @@ TEMPLATES = [
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'build/static'),
 ]
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 WSGI_APPLICATION = 'emojis.wsgi.application'
 

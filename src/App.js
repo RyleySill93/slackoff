@@ -19,7 +19,7 @@ class App extends React.Component {
         const doStuff = () => {
             const formData = new FormData();
             formData.append("file", this.state.file, this.state.file.name);
-            axios.post(`http://localhost:8000/${this.state.style}/`, formData).then(res => {
+            axios.post(`${window.location.origin}/${this.state.style}/`, formData).then(res => {
                 this.setState({ data: res.data })
             });
         };
