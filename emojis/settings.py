@@ -25,7 +25,7 @@ SECRET_KEY = '7i88+by@=%oqj2gwr_e_*t)5lyhx*w-@lrhq0thgz4g(+mp!i!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['slackofftoday.herokuapp.com']
+ALLOWED_HOSTS = ['slackofftoday.herokuapp.com', 'localhost']
 
 
 # Application definition
@@ -63,7 +63,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR)
+            os.path.join(BASE_DIR, 'build')
         ],
         'APP_DIRS': True,
         'OPTIONS': {
