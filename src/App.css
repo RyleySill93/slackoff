@@ -58,6 +58,7 @@
   font-family: Baloo;
   outline: none;
   transition: transform 0.1s, box-shadow 0.1s;
+  z-index: 1;
 }
 
 .button:hover {
@@ -65,7 +66,6 @@
   color: #EE7AAA;
   box-shadow: 0 8px #DB5B90;
   transform: translateY(2px);
-  /*transition: transform 0.1s;*/
 }
 
 .button:active {
@@ -103,4 +103,27 @@ input[type="file"] {
     display: flex;
     flex-grow: 1;
     align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.another-one {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.another-one:hover .dj-khaled {
+  display: inherit;
+}
+
+.dj-khaled {
+  margin-bottom: -5px;
+  display: none;
+  position: absolute;
+  bottom: 50px;
+}
+
+.result {
+
 }
