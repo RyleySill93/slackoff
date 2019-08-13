@@ -28,5 +28,6 @@ urlpatterns = [
     path('rap_battle/', views.rap_battle),
     path('strut/', views.strut),
     path('trapped/', views.trapped),
+    path('wrecking-ball/', views.wrecking_ball),
     re_path('.*', TemplateView.as_view(template_name='index.html')),
 ]

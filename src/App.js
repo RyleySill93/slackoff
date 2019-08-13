@@ -10,19 +10,53 @@ class App extends React.Component {
         file: null,
         style: 'intensify',
         fileUrl: '',
+        loading: false,
     };
 
-    render() {
-        const uploadFile = (file) => {
-            this.setState({ file, fileUrl: URL.createObjectURL(file) });
-        };
-
+    getContent = () => {
         const doStuff = () => {
+            this.setState({ loading: true });
             const formData = new FormData();
             formData.append("file", this.state.file, this.state.file.name);
             axios.post(`${window.location.origin}/${this.state.style}/`, formData).then(res => {
                 this.setState({ url: res.data.url })
-            });
+            })
+                .finally(() => this.setState({ loading: false }));
+        };
+
+        if (this.state.loading) {
+            return (
+                <React.Fragment>
+                    <div/>
+                    <div className="loader">Loading...</div>
+                    <div/>
+                </React.Fragment>
+            )
+        } else if (this.state.url) {
+            return (
+                <React.Fragment>
+                    <div/>
+                    <img style={{ height: 200 }} src={this.state.url} />
+                    <div className="another-one">
+                        <img className="dj-khaled" style={{ width: 100 }} src={require('./khaled.png')} />
+                        <button className="button" onClick={doStuff}>ANOTHER ONE</button>
+                    </div>
+                </React.Fragment>
+            )
+        }
+
+        return (
+            <React.Fragment>
+                <div/>
+                <button className="button" onClick={doStuff}>CLICK ME</button>
+                <div/>
+            </React.Fragment>
+        )
+    }
+
+    render() {
+        const uploadFile = (file) => {
+            this.setState({ file, fileUrl: URL.createObjectURL(file) });
         };
 
         function openDialog() {
@@ -43,7 +77,7 @@ class App extends React.Component {
                                 this.state.file ? (
                                     <React.Fragment>
                                         <div/>
-                                        <img style={{ width: 100 }} src={this.state.fileUrl} />
+                                        <img style={{ height: 200 }} src={this.state.fileUrl} />
                                         <button className="button" onClick={openDialog}>SEND PICS? ;)</button>
                                     </React.Fragment>
                                 ) : (
@@ -71,6 +105,7 @@ class App extends React.Component {
                                 <option value="rap_battle">:RAP_BATTLE:</option>
                                 <option value="strut">:STRUT:</option>
                                 <option value="trapped">:TRAPPED:</option>
+                                <option value="wrecking-ball">:WRECKING_BALL:</option>
                             </select>
                             <div/>
                         </div>
@@ -78,24 +113,7 @@ class App extends React.Component {
                     <div className="column">
                         <div className="step">3. GENERATE EMOJI</div>
                         <div className="button-holder">
-                            {
-                                this.state.url ? (
-                                    <React.Fragment>
-                                        <div/>
-                                        <img style={{ width: 200 }} src={this.state.url} />
-                                        <div className="another-one">
-                                            <img className="dj-khaled" style={{ width: 100 }} src={require('./khaled.png')} />
-                                            <button className="button" onClick={doStuff}>ANOTHER ONE</button>
-                                        </div>
-                                    </React.Fragment>
-                                ) : (
-                                    <React.Fragment>
-                                        <div/>
-                                        <button className="button" onClick={doStuff}>CLICK ME</button>
-                                        <div/>
-                                    </React.Fragment>
-                                )
-                            }
+                            { this.getContent() }
                         </div>
                     </div>
                 </main>

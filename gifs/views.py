@@ -683,3 +683,124 @@ def trapped(request):
     os.remove(file_path)
 
     return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def wrecking_ball(request):
+    points = [
+        (112, 29),  # 1
+        (112, 29),  # 2
+        (113, 30),  # 3
+        (113, 30),  # 4
+        (114, 31),  # 5
+        (116, 31),  # 6
+        (116, 32),  # 7
+        (117, 33),  # 8
+        (118, 34),  # 9
+        (119, 37),  # 10
+        (119, 36),  # 11
+        (121, 38),  # 12
+        (123, 38),  # 13
+        (126, 41),  # 14
+        (126, 41),  # 15
+        (128, 43),  # 16
+        (130, 43),  # 17
+        (133, 45),  # 18
+        (134, 45),  # 19
+        (136, 45),  # 20
+        (140, 47),  # 21
+        (143, 47),  # 22
+        (144, 48),  # 23
+        (148, 49),  # 24
+        (150, 49),  # 25
+        (152, 50),  # 26
+        (159, 52),  # 27
+        (163, 53),  # 28
+        (171, 55),  # 29
+        (171, 55),  # 30
+        (176, 56),  # 31
+        (183, 57),  # 32
+        (188, 58),  # 33
+        (190, 58),  # 34
+        (193, 58),  # 35
+        (198, 59),  # 36
+        (202, 60),  # 37
+        (205, 60),  # 38
+        (209, 60),  # 39
+        (212, 60),  # 40
+        (214, 61),  # 41
+        (218, 62),  # 42
+        (220, 62),  # 43
+        (222, 62),  # 44
+        (224, 62),  # 45
+        (227, 63),  # 46
+        (227, 63),  # 47
+        (231, 65),  # 48
+        (232, 65),  # 49
+        (233, 66),  # 50
+        (233, 66),  # 51
+        (234, 67),  # 52
+        (234, 67),  # 53
+        (232, 67),  # 54
+        (233, 67),  # 55
+        (232, 68),  # 56
+        (232, 68),  # 57
+        (231, 68),  # 58
+        (231, 69),  # 59
+    ]
+
+    im = Image.open(request.FILES['file'])
+
+    width, height = im.size
+    head_width = 60
+    resize_factor = width / head_width
+    head_height = int(height / resize_factor)
+    im = im.resize((head_width, head_height), Image.ANTIALIAS)
+    im = im.rotate(30)
+
+    half_width = int(head_width / 2)
+    half_height = int(head_height / 2)
+
+    base = Image.open("pics/wrecking_ball.gif")
+
+    frames = []
+
+    for i in range(0, base.n_frames):
+        print(i)
+        base.seek(i)
+        frame = base.convert('RGBA')
+        x = points[i][0] - half_width
+        y = points[i][1] - half_height
+        frame.paste(im, (x - 10, y), mask=im)
+
+        # transparency
+        alpha = frame.split()[3]
+        frame = frame.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
+        mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
+        frame.paste(255, mask)
+
+        x, y = frame.size
+        x2, y2 = int(x / 2), int(y / 2)
+        frame = frame.resize((x2, y2), Image.ANTIALIAS)
+
+        frames.append(frame)
+
+    file_name = '{}.gif'.format(uuid.uuid1())
+    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+
+    frames[0].save(file_path,
+                   save_all=True,
+                   disposal=2,
+                   append_images=frames[1:],
+                   duration=60,
+                   loop=0,
+                   optimize=True,
+                   quality=20,
+                   transparency=255
+                   )
+
+    url = upload_file(file_path, file_name)
+
+    os.remove(file_path)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
