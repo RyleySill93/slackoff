@@ -20,7 +20,7 @@ class App extends React.Component {
         const doStuff = () => {
             const formData = new FormData();
             formData.append("file", this.state.file, this.state.file.name);
-            axios.post(`${window.location.origin}/${this.state.style}/`, formData).then(res => {
+            axios.post(`${'http://localhost:8000'}/${this.state.style}/`, formData).then(res => {
                 this.setState({ url: res.data.url })
             });
         };
@@ -62,8 +62,15 @@ class App extends React.Component {
                         <div className="button-holder">
                             <div/>
                             <select className="button" value={this.state.style} onChange={event => this.setState({ style: event.target.value })}>
-                                <option value="bobblify">BOBBLE</option>
-                                <option value="intensify">INTENSIFY</option>
+                                <option value="bobblify">:BOBBLE:</option>
+                                <option value="intensify">:INTENSIFY:</option>
+                                <option value="detective">:DETECTIVE:</option>
+                                <option value="appears">:APPEARS:</option>
+                                <option value="disappears">:DISAPPEARS:</option>
+                                <option value="carlton_dance">:CARLTON:</option>
+                                <option value="rap_battle">:RAP_BATTLE:</option>
+                                <option value="strut">:STRUT:</option>
+                                <option value="trapped">:TRAPPED:</option>
                             </select>
                             <div/>
                         </div>
@@ -75,7 +82,7 @@ class App extends React.Component {
                                 this.state.url ? (
                                     <React.Fragment>
                                         <div/>
-                                        <img style={{ width: 100 }} src={this.state.url} />
+                                        <img style={{ width: 200 }} src={this.state.url} />
                                         <div className="another-one">
                                             <img className="dj-khaled" style={{ width: 100 }} src={require('./khaled.png')} />
                                             <button className="button" onClick={doStuff}>ANOTHER ONE</button>

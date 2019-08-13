@@ -21,5 +21,12 @@ from gifs import views
 urlpatterns = [
     path('bobblify/', views.bobblify),
     path('intensify/', views.intensify),
+    path('detective/', views.detective),
+    path('disappears/', views.disappears),
+    path('appears/', views.appears),
+    path('carlton_dance/', views.carlton_dance),
+    path('rap_battle/', views.rap_battle),
+    path('strut/', views.strut),
+    path('trapped/', views.trapped),
     re_path('.*', TemplateView.as_view(template_name='index.html')),
 ]
