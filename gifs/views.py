@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageEnhance
 import uuid
 from emojis.settings import BASE_DIR
 from django.http import HttpResponse
@@ -793,6 +793,306 @@ def wrecking_ball(request):
                    disposal=2,
                    append_images=frames[1:],
                    duration=60,
+                   loop=0,
+                   optimize=True,
+                   quality=20,
+                   transparency=255
+                   )
+
+    url = upload_file(file_path, file_name)
+
+    os.remove(file_path)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def pennywise(request):
+    points = [
+        (None, None),  # 1
+        (None, None),  # 2
+        (None, None),  # 3
+        (None, None),  # 4
+        (None, None),  # 5
+        (None, None),  # 6
+        (None, None),  # 7
+        (None, None),  # 8
+        (None, None),  # 9
+        (None, None),  # 10
+        (None, None),  # 11
+        (None, None),  # 12
+        (None, None),  # 13
+        (None, None),  # 14
+        (None, None),  # 15
+        (None, None),  # 16
+        (None, None),  # 17
+        (None, None),  # 18
+        (None, None),  # 19
+        (None, None),  # 20
+        (None, None),  # 21
+        (None, None),  # 22
+        (None, None),  # 23
+        (None, None),  # 24
+        (None, None),  # 25
+        (None, None),  # 26
+        (None, None),  # 27
+        (None, None),  # 28
+        (None, None),  # 29
+        (None, None),  # 30
+        (None, None),  # 31
+        (None, None),  # 32
+        (None, None),  # 33
+        (None, None),  # 34
+        (None, None),  # 35
+        (None, None),  # 36
+        (None, None),  # 37
+        (None, None),  # 38
+        (282, 92, 0.20),  # 39
+        (283, 87, 0.40),  # 40
+        (282, 85, 0.60),  # 41
+        (281, 82, 0.80),  # 42
+        (280, 80),  # 43
+        (280, 79),  # 44
+        (280, 78),  # 45
+        (280, 77),  # 46
+        (280, 76),  # 47
+        (280, 76),  # 48
+        (279, 76),  # 49
+        (None, None),  # 50
+        (None, None),  # 51
+        (None, None),  # 52
+        (None, None),  # 53
+        (None, None),  # 54
+        (None, None),  # 55
+        (None, None),  # 56
+        (None, None),  # 57
+        (None, None),  # 58
+        (None, None),  # 59
+        (None, None),  # 60
+        (None, None),  # 61
+        (None, None),  # 62
+        (None, None),  # 63
+        (258, 59),  # 64
+        (258, 59),  # 65
+        (258, 59),  # 66
+        (258, 59),  # 67
+        (258, 59),  # 68
+        (258, 59),  # 69
+        (258, 59),  # 70
+        (258, 59),  # 71
+        (258, 59),  # 72
+        (258, 59),  # 73
+        (260, 60),  # 74
+        (261, 60),  # 75
+        (263, 60),  # 76
+        (263, 60),  # 77
+        (264, 61),  # 78
+        (266, 63),  # 79
+        (269, 63),  # 80
+    ]
+
+    im = Image.open(request.FILES['file'])
+
+    width, height = im.size
+    head_height = 200
+    resize_factor = width / head_height
+    head_width = int(width / resize_factor)
+    im = im.resize((head_width, head_height), Image.ANTIALIAS)
+
+    half_width = int(head_width / 2)
+    half_height = int(head_height / 2)
+
+    base = Image.open("pics/pennywise.gif")
+    mask = Image.open("pics/pennywise_mask.gif")
+    frames = []
+
+    for i in range(0, base.n_frames):
+        base.seek(i)
+        frame = base.convert('RGB')
+        if points[i][0] is not None:
+            full_brightness = 0.4
+            x = points[i][0] - half_width
+            y = points[i][1] - half_height
+            enhancer = ImageEnhance.Brightness(im)
+            enhanced_im = enhancer.enhance(full_brightness * (points[i][2] if len(points[i]) == 3 else 1))
+            frame.paste(enhanced_im, (x + 10, y), mask=enhanced_im)
+
+            mask.seek(i)
+            msk = mask.convert('RGBA')
+            frame.paste(msk, mask=msk)
+
+        x, y = frame.size
+        x2, y2 = int(x / 1.5), int(y / 1.5)
+        frame = frame.resize((x2, y2), Image.ANTIALIAS)
+
+        frames.append(frame)
+
+    file_name = '{}.gif'.format(uuid.uuid1())
+    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+
+    frames[0].save(file_path,
+                   save_all=True,
+                   disposal=2,
+                   append_images=frames[1:],
+                   duration=100,
+                   loop=0,
+                   optimize=True,
+                   quality=20,
+                   transparency=255
+                   )
+
+    url = upload_file(file_path, file_name)
+
+    os.remove(file_path)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def heres_johnny(request):
+    points = [
+        (None, None),  # 1
+        (None, None),  # 2
+        (None, None),  # 3
+        (None, None),  # 4
+        (None, None),  # 5
+        (None, None),  # 6
+        (None, None),  # 7
+        (None, None),  # 8
+        (None, None),  # 9
+        (None, None),  # 10
+        (None, None),  # 11
+        (None, None),  # 12
+        (None, None),  # 13
+        (None, None),  # 14
+        (None, None),  # 15
+        (None, None),  # 16
+        (None, None),  # 17
+        (None, None),  # 18
+        (None, None),  # 19
+        (306, 114, 135),  # 20
+        (286, 126, 120),  # 21
+        (283, 133, 115),  # 22
+        (282, 161, 120),  # 23
+        (290, 166, 120),  # 24
+        (300, 175, 115),  # 25
+        (303, 169, 115),  # 26
+        (288, 146, 110),  # 27
+        (270, 152, 108),  # 28
+        (253, 166, 100),  # 29
+        (250, 161, 100),  # 30
+        (258, 156, 102),  # 31
+        (269, 159, 104),  # 32
+        (288, 164, 108),  # 33
+        (311, 173, 105),  # 34
+        (344, 165, 105),  # 35
+        (355, 153, 105),  # 36
+        (376, 153, 108),  # 37
+        (380, 150, 108),  # 38
+        (380, 150, 107),  # 39
+        (380, 156, 103),  # 40
+        (380, 162, 102),  # 41
+        (375, 169, 101),  # 42
+        (377, 179, 98),  # 43
+        (385, 177, 100),  # 44
+        (430, 180, 100),  # 45
+        (437, 179, 103),  # 46
+        (459, 204, 105),  # 47
+        (470, 213, 105),  # 48
+        (470, 213, 110),  # 49
+        (469, 193, 120),  # 50
+        (422, 209, 130),  # 51
+        (365, 185, 135),  # 52
+        (288, 187, 132),  # 53
+        (260, 200, 128),  # 54
+        (251, 196, 130),  # 55
+        (266, 193, 135),  # 56
+        (285, 201, 140),  # 57
+        (306, 223, 150),  # 58
+        (326, 245, 160),  # 59
+        (340, 256, 163),  # 60
+        (352, 256, 167),  # 61
+        (None, None),  # 62
+        (None, None),  # 63
+        (None, None),  # 64
+        (None, None),  # 65
+        (None, None),  # 66
+        (None, None),  # 67
+        (None, None),  # 68
+        (None, None),  # 69
+        (None, None),  # 70
+        (None, None),  # 71
+        (None, None),  # 72
+        (None, None),  # 73
+        (None, None),  # 74
+        (None, None),  # 75
+        (None, None),  # 76
+        (None, None),  # 77
+        (None, None),  # 78
+        (None, None),  # 79
+        (None, None),  # 80
+        (310, 110, 430),  # 81
+        (300, 100, 430),  # 82
+        (310, 90, 430),  # 83
+        (320, 110, 430),  # 84
+        (310, 90, 430),  # 85
+        (300, 110, 430),  # 86
+        (310, 100, 430),  # 87
+        (320, 110, 430),  # 88
+        (310, 90, 430),  # 89
+        (300, 110, 430),  # 90
+        (320, 100, 430),  # 91
+        (300, 110, 430),  # 92
+        (310, 90, 430),  # 93
+        (300, 110, 430),  # 94
+        (320, 110, 430),  # 95
+        (340, 90, 430),  # 96
+        (310, 110, 430),  # 97
+        (300, 110, 430),  # 98
+        (290, 140, 430),  # 99
+        (310, 110, 430),  # 100
+    ]
+
+    im = Image.open(request.FILES['file'])
+
+    base = Image.open("pics/johnny.gif")
+    mask = Image.open("pics/johnny_mask.gif")
+    frames = []
+
+    for i in range(0, base.n_frames):
+        base.seek(i)
+        frame = base.convert('RGB')
+
+        if points[i][0] is not None:
+            resized_im = resize(im, points[i][2] + 40)
+
+            head_width, head_height = resized_im.size
+
+            half_width = int(head_width / 2)
+            half_height = int(head_height / 2)
+            x = points[i][0] - half_width
+            y = points[i][1] - half_height
+
+            frame.paste(resized_im, (points[i][0] - half_width, points[i][1] - half_height), mask=resized_im)
+
+            mask.seek(i)
+            msk = mask.convert('RGBA')
+            frame.paste(msk, mask=msk)
+
+        x, y = frame.size
+        x2, y2 = int(x / 1.5), int(y / 1.5)
+        frame = frame.resize((x2, y2), Image.ANTIALIAS)
+
+        frames.append(frame)
+
+    file_name = '{}.gif'.format(uuid.uuid1())
+    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+
+    frames[0].save(file_path,
+                   save_all=True,
+                   disposal=2,
+                   append_images=frames[1:],
+                   duration=100,
                    loop=0,
                    optimize=True,
                    quality=20,
