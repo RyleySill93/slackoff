@@ -847,15 +847,15 @@ def pennywise(request):
         (None, None),  # 36
         (None, None),  # 37
         (None, None),  # 38
-        (282, 92, 0.20),  # 39
-        (283, 87, 0.40),  # 40
-        (282, 85, 0.60),  # 41
-        (281, 82, 0.80),  # 42
-        (280, 80),  # 43
-        (280, 79),  # 44
-        (280, 78),  # 45
-        (280, 77),  # 46
-        (280, 76),  # 47
+        (282, 92, 0.10),  # 39
+        (283, 87, 0.20),  # 40
+        (282, 85, 0.30),  # 41
+        (281, 82, 0.40),  # 42
+        (280, 80, 0.50),  # 43
+        (280, 79, 0.60),  # 44
+        (280, 78, 0.70),  # 45
+        (280, 77, 0.80),  # 46
+        (280, 76, 0.90),  # 47
         (280, 76),  # 48
         (279, 76),  # 49
         (None, None),  # 50
@@ -910,7 +910,7 @@ def pennywise(request):
         base.seek(i)
         frame = base.convert('RGB')
         if points[i][0] is not None:
-            full_brightness = 0.4
+            full_brightness = 0.2
             x = points[i][0] - half_width
             y = points[i][1] - half_height
             enhancer = ImageEnhance.Brightness(im)
