@@ -895,7 +895,7 @@ def pennywise(request):
 
     width, height = im.size
     head_height = 200
-    resize_factor = width / head_height
+    resize_factor = height / head_height
     head_width = int(width / resize_factor)
     im = im.resize((head_width, head_height), Image.ANTIALIAS)
 
