@@ -1,0 +1,93 @@
+from gifs.image_data import ImageData, FrameData, TrackedElement, TrackedElementPosition
+
+
+judy = TrackedElement(
+    id=1,
+)
+
+tracked_elements = [judy]
+
+frames_data = [
+    FrameData(index=0, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=236, y=51, height=48)]),
+    FrameData(index=1, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=235, y=51, height=48)]),
+    FrameData(index=2, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=232, y=49, height=50)]),
+    FrameData(index=3, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=232, y=49, height=51)]),
+    FrameData(index=4, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=232, y=48, height=51)]),
+    FrameData(index=5, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=233, y=48, height=52)]),
+    FrameData(index=6, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=234, y=48, height=54)]),
+    FrameData(index=7, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=233, y=46, height=55)]),
+    FrameData(index=8, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=234, y=46, height=55)]),
+    FrameData(index=9, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=233, y=45, height=56)]),
+    FrameData(index=10, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=233, y=44, height=56)]),
+    FrameData(index=11, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=233, y=45, height=56)]),
+    FrameData(index=12, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=234, y=45, height=57)]),
+    FrameData(index=13, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=233, y=45, height=58)]),
+    FrameData(index=14, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=234, y=46, height=59)]),
+    FrameData(index=15, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=233, y=47, height=61)]),
+    FrameData(index=16, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=232, y=49, height=61)]),
+    FrameData(index=17, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=232, y=50, height=61)]),
+    FrameData(index=18, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=231, y=53, height=61)]),
+    FrameData(index=19, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=231, y=51, height=62)]),
+    FrameData(index=20, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=229, y=52, height=62)]),
+    FrameData(index=21, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=229, y=55, height=63)]),
+    FrameData(index=22, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=58, height=64)]),
+    FrameData(index=23, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=229, y=59, height=66)]),
+    FrameData(index=24, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=229, y=59, height=66)]),
+    FrameData(index=25, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=227, y=60, height=66)]),
+    FrameData(index=26, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=227, y=60, height=68)]),
+    FrameData(index=27, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=61, height=68)]),
+    FrameData(index=28, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=229, y=62, height=68)]),
+    FrameData(index=29, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=229, y=63, height=68)]),
+    FrameData(index=30, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=229, y=63, height=69)]),
+    FrameData(index=31, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=64, height=69)]),
+    FrameData(index=32, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=65, height=69)]),
+    FrameData(index=33, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=67, height=69)]),
+    FrameData(index=34, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=67, height=69)]),
+    FrameData(index=35, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=225, y=67, height=69)]),
+    FrameData(index=36, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=222, y=67, height=70)]),
+    FrameData(index=37, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=219, y=66, height=70)]),
+    FrameData(index=38, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=217, y=67, height=70)]),
+    FrameData(index=39, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=216, y=67, height=70)]),
+    FrameData(index=40, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=218, y=68, height=71)]),
+    FrameData(index=41, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=217, y=69, height=71)]),
+    FrameData(index=42, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=217, y=69, height=71)]),
+    FrameData(index=43, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=218, y=68, height=71)]),
+    FrameData(index=44, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=218, y=69, height=72)]),
+    FrameData(index=45, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=218, y=69, height=72)]),
+    FrameData(index=46, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=221, y=73, height=72)]),
+    FrameData(index=47, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=220, y=74, height=72)]),
+    FrameData(index=48, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=219, y=75, height=72)]),
+    FrameData(index=49, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=221, y=77, height=72)]),
+    FrameData(index=50, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=222, y=80, height=72)]),
+    FrameData(index=51, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=222, y=80, height=72)]),
+    FrameData(index=52, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=222, y=81, height=72)]),
+    FrameData(index=53, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=223, y=82, height=72)]),
+    FrameData(index=54, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=224, y=85, height=72)]),
+    FrameData(index=55, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=224, y=88, height=72)]),
+    FrameData(index=56, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=224, y=90, height=72)]),
+    FrameData(index=57, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=225, y=92, height=72)]),
+    FrameData(index=58, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=227, y=91, height=72)]),
+    FrameData(index=59, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=226, y=94, height=72)]),
+    FrameData(index=60, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=226, y=96, height=72)]),
+    FrameData(index=61, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=96, height=72)]),
+    FrameData(index=62, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=98, height=72)]),
+    FrameData(index=63, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=100, height=72)]),
+    FrameData(index=64, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=228, y=102, height=72)]),
+    FrameData(index=65, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=230, y=102, height=72)]),
+    FrameData(index=66, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=230, y=102, height=72)]),
+    FrameData(index=67, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=232, y=103, height=72)]),
+    FrameData(index=68, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=231, y=104, height=72)]),
+    FrameData(index=69, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=232, y=105, height=72)]),
+    FrameData(index=70, tracked_element_positions=[TrackedElementPosition(tracked_element_id=judy.id, x=232, y=104, height=72)]),
+]
+
+adjustments = [
+    TrackedElementPosition(tracked_element_id=judy.id, x=-10, y=-12, height=20, rotation=-15)
+]
+
+left_hanging = ImageData(
+    frames_data=frames_data,
+    tracked_elements=tracked_elements,
+    background_image_path='pics/left_hanging.gif',
+    adjustments=adjustments,
+)

@@ -8,7 +8,8 @@ import boto3
 import os
 from rest_framework.response import Response
 from rest_framework import status
-
+from gifs.image_data import TrackedElement
+from gifs import gifs_data
 
 S3_BUCKET = os.environ.get('S3_BUCKET')
 
@@ -24,6 +25,59 @@ def upload_file(file_path, file_name):
                                     ExpiresIn=3600)
 
     return url
+
+def get_file_name_path():
+    file_name = '{}.gif'.format(uuid.uuid1())
+    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+
+    return file_name, file_path
+
+def get_duration(img):
+    img = Image.open(img)
+    frames = duration = 0
+    while True:
+        try:
+            img.seek(frames)
+            frames += 1
+            duration += img.info['duration']
+        except EOFError:
+            return duration / frames
+    return None
+
+
+def get_generated_gif_url(payload, gif_type, reverse=False):
+    frames = generate_gif_frames(gif_type, [TrackedElement(
+        id=1,
+        image_file=payload,
+    )])
+
+    if reverse:
+        frames.reverse()
+
+    file_name, file_path = get_file_name_path()
+
+    duration = get_duration(gif_type.background_image_path)
+
+    save_gif(file_path, frames, duration=duration)
+
+    url = upload_file(file_path, file_name)
+
+    os.remove(file_path)
+
+    return url
+
+def save_gif(file_path, frames, duration):
+    frames[0].save(
+        file_path,
+        save_all=True,
+        disposal=2,
+        append_images=frames[1:],
+        duration=duration,
+        loop=0,
+        optimize=True,
+        quality=95,
+        transparency=255
+    )
 
 
 def prep_file(file):
@@ -46,6 +100,92 @@ def prep_file(file):
 
     return im
 
+
+def resize(im, new_height):
+    width, height = im.size
+    resize_factor = height / new_height
+    new_width = int(width / resize_factor)
+
+    return im.resize((new_width, new_height), Image.ANTIALIAS)
+
+
+def paste(tracked_element_position, frame, paste_image, x_adj, y_adj):
+    width, height = paste_image.size
+    half_width = int(width / 2)
+    half_height = int(height / 2)
+
+    x = tracked_element_position.x - half_width
+    y = tracked_element_position.y - half_height
+
+    frame.paste(paste_image, (x + x_adj, y + y_adj), mask=paste_image)
+
+
+def generate_gif_frames(image_data, input_tracked_elements):
+    background_image = Image.open(image_data.background_image_path)
+    foreground_image = None
+
+    if image_data.foreground_image_path:
+        foreground_image = Image.open(image_data.foreground_image_path)
+
+    frames = []
+
+    for frame_index in range(0, background_image.n_frames):
+        background_image.seek(frame_index)
+        if image_data.foreground_image_path:
+            frame = background_image.convert('RGB')
+        else:
+            frame = background_image.convert('RGBA')
+
+        for tracked_element in input_tracked_elements:
+            tracked_element_position = image_data.get_tracked_element_position(
+                tracked_element_id=tracked_element.id,
+                frame_index=frame_index,
+            )
+
+            if not tracked_element_position:
+                continue
+
+            adjustment = image_data.get_tracked_element_adjustment(
+                tracked_element_id=tracked_element.id,
+            )
+
+            # resize
+            paste_image = resize(tracked_element.image_file, tracked_element_position.height + (adjustment.height or 0))
+
+            # rotate
+            if tracked_element_position.rotation or adjustment.rotation:
+                paste_image = paste_image.rotate((tracked_element_position.rotation or 0) + (adjustment.rotation or 0), expand=True)
+
+            # brightness
+            if tracked_element_position.brightness or adjustment.brightness:
+                enhancer = ImageEnhance.Brightness(paste_image)
+                paste_image = enhancer.enhance((tracked_element_position.brightness or 0) + (adjustment.brightness or 0))
+
+            # paste
+            paste(tracked_element_position, frame, paste_image, (adjustment.x or 0), (adjustment.y or 0))
+
+        if image_data.foreground_image_path:
+            if frame_index in image_data.foreground_indicies:
+                foreground_image.seek(frame_index)
+                msk = foreground_image.convert('RGBA')
+                frame.paste(msk, mask=msk)
+        else:
+            # make added elements transparent - carlton turns green without this
+            alpha = frame.split()[3]
+            frame = frame.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
+            mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
+            frame.paste(255, mask)
+
+        # optimize frame
+        # x, y = frame.size
+        # x2, y2 = int(x / 2), int(y / 2)
+        # frame = frame.resize((x2, y2), Image.ANTIALIAS)
+
+        frames.append(frame)
+
+    return frames
+
+
 @api_view(['POST'])
 def bobblify(request):
     start = -15
@@ -67,8 +207,7 @@ def bobblify(request):
         frames.append(frame)
         current -= degs
 
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+    file_name, file_path = get_file_name_path()
 
     frames[0].save(
         file_path,
@@ -120,8 +259,7 @@ def intensify(request):
 
         frames.append(frame)
 
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+    file_name, file_path = get_file_name_path()
 
     frames[0].save(file_path,
                    save_all=True,
@@ -175,12 +313,7 @@ def detective(request):
     file_name = '{}.png'.format(uuid.uuid1())
     file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
 
-    new_im.show()
-
-    new_im.save(file_path,
-                   # optimize=True,
-                   # quality=95,
-                   )
+    new_im.save(file_path)
 
     url = upload_file(file_path, file_name)
 
@@ -286,821 +419,200 @@ def bush_frames(file, emerge=False):
 
 @api_view(['POST'])
 def disappears(request):
-    frames = bush_frames(request.FILES['file'])
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+    im = Image.open(request.FILES['file'])
 
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=60,
-                   transparency=255,
-                   loop=0,
-                   optimize=True,
-                   quality=95,
-                   )
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.disappears)
 
-    url = upload_file(file_path, file_name)
+    return Response({'url': url}, status=status.HTTP_200_OK)
 
-    os.remove(file_path)
+
+@api_view(['POST'])
+def magic(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.magic)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def begging(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.begging)
 
     return Response({'url': url}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def appears(request):
-    frames = bush_frames(request.FILES['file'], emerge=True)
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+    im = Image.open(request.FILES['file'])
 
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=60,
-                   transparency=255,
-                   loop=0,
-                   optimize=True,
-                   quality=95,
-                   )
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.disappears, reverse=True)
 
-    url = upload_file(file_path, file_name)
+    return Response({'url': url}, status=status.HTTP_200_OK)
 
-    os.remove(file_path)
+
+@api_view(['POST'])
+def time(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.time)
 
     return Response({'url': url}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def carlton_dance(request):
-    points = [
-        (97, 127),  # 1
-        (98, 127),  # 2
-        (96, 130),  # 3
-        (98, 130),  # 4
-        (108, 130),  # 5
-        (112, 129),  # 6
-        (123, 135),  # 7
-        (122, 133),  # 8
-        (113, 129),  # 9
-        (106, 127),  # 10
-        (98, 125),  # 11
-        (97, 125),  # 12
-        (100, 129),  # 13
-        (101, 131),  # 14
-        (102, 132),  # 15
-        (99, 133),  # 16
-        (90, 139),  # 17
-        (84, 142),  # 18
-        (74, 145),  # 19
-        (73, 147),  # 20
-        (80, 138),  # 21
-        (88, 133),  # 22
-        (97, 126),  # 23
-        (96, 123),  # 24
-    ]
-
     im = Image.open(request.FILES['file'])
 
-    width, height = im.size
-    head_width = 50
-    resize_factor = width / head_width
-    head_height = int(height / resize_factor)
-    im = im.resize((head_width, head_height), Image.ANTIALIAS)
-
-    half_width = int(head_width / 2)
-    half_height = int(head_height / 2)
-
-
-    carlton = Image.open("pics/carlton.gif")
-
-    frames = []
-
-    for i in range(0, carlton.n_frames):
-        carlton.seek(i)
-        frame = carlton.convert('RGBA')
-        x = points[i][0] - half_width
-        y = points[i][1] - half_height
-        frame.paste(im, (x + 10, y), mask=im)
-
-        # transparency
-        alpha = frame.split()[3]
-        frame = frame.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
-        mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
-        frame.paste(255, mask)
-
-        frames.append(frame)
-
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
-
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=60,
-                   loop=0,
-                   optimize=True,
-                   quality=95,
-                   transparency=255
-                   )
-
-    url = upload_file(file_path, file_name)
-
-    os.remove(file_path)
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.carlton)
 
     return Response({'url': url}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def rap_battle(request):
-    points = [
-        (158, 88),  # 1
-        (157, 88),  # 2
-        (155, 88),  # 3
-        (155, 88),  # 4
-        (155, 88),  # 5
-        (152, 87),  # 6
-        (151, 87),  # 7
-        (149, 85),  # 8
-        (146, 84),  # 9
-        (142, 84),  # 10
-        (139, 83),  # 11
-        (138, 83),  # 12
-        (136, 82),  # 13
-        (133, 84),  # 14
-        (132, 84),  # 15
-        (129, 83),  # 16
-        (130, 82),  # 17
-        (127, 80),  # 18
-        (125, 79),  # 19
-        (124, 77),  # 20
-        (123, 75),  # 21
-        (123, 75),  # 22
-        (121, 72),  # 23
-        (120, 69),  # 24
-        (120, 66),  # 25
-        (121, 63),  # 26
-        (121, 63),  # 27
-        (124, 60),  # 28
-        (124, 60),  # 29
-        (127, 58),  # 30
-        (129, 58),  # 31
-        (129, 58),  # 32
-        (130, 61),  # 33
-        (130, 61),  # 34
-        (130, 62),  # 35
-        (133, 65),  # 36
-        (137, 67),  # 37
-        (140, 70),  # 38
-        (144, 73),  # 39
-        (149, 76),  # 40
-        (149, 76),  # 41
-        (147, 73),  # 42
-        (150, 76),  # 43
-        (155, 79),  # 44
-        (155, 79),  # 45
-        (158, 80),  # 46
-        (160, 83),  # 47
-        (160, 85),  # 48
-        (160, 85),  # 49
-        (159, 86),  # 50
-        (159, 86),  # 51
-    ]
 
     im = Image.open(request.FILES['file'])
 
-    width, height = im.size
-    head_width = 70
-    resize_factor = width / head_width
-    head_height = int(height / resize_factor)
-    im = im.resize((head_width, head_height), Image.ANTIALIAS)
-
-    half_width = int(head_width / 2)
-    half_height = int(head_height / 2)
-
-    base_rap = Image.open("pics/rap.gif")
-    rap_mask = Image.open("pics/rapmask.gif")
-    frames = []
-
-    for i in range(0, base_rap.n_frames):
-        base_rap.seek(i)
-        frame = base_rap.convert('RGB')
-        if i < len(points):
-            x = points[i][0] - half_width
-            y = points[i][1] - half_height
-            frame.paste(im, (x, y), mask=im)
-
-            if i >= 24:
-                rap_mask.seek(i)
-                mask = rap_mask.convert('RGBA')
-                frame.paste(mask, mask=mask)
-
-        frames.append(frame)
-
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
-
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=60,
-                   transparency=255,
-                   loop=0,
-                   optimize=True,
-                   quality=95,
-    )
-
-    url = upload_file(file_path, file_name)
-
-    os.remove(file_path)
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.supa_hot_fire)
 
     return Response({'url': url}, status=status.HTTP_200_OK)
 
 
-def resize(im, resize_height):
-    width, height = im.size
-    resize_factor = height / resize_height
-    head_width = int(width / resize_factor)
-    return im.resize((head_width, resize_height), Image.ANTIALIAS)
+@api_view(['POST'])
+def strut(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.strut)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
-def strut(request):
-    points = [
-        (125, 85, 18),  # 1
-        (126, 82, 21),  # 2
-        (129, 80, 23),  # 3
-        (129, 78, 24),  # 4
-        (130, 74, 25),  # 5
-        (129, 68, 26),  # 6
-        (127, 63, 27),  # 7
-        (126, 60, 28),  # 8
-        (125, 58, 29),  # 9
-        (124, 58, 32),  # 10
-        (118, 55, 34),  # 11
-        (112, 55, 37),  # 12
-        (111, 52, 40),  # 13
-        (111, 47, 43),  # 14
-        (116, 43, 43),  # 15
-        (119, 43, 44),  # 16
-        (122, 46, 44),  # 17
-        (126, 51, 47),  # 18
-        (135, 54, 51),  # 19
-        (149, 52, 53),  # 20
-        (155, 51, 56),  # 21
-        (155, 45, 57),  # 22
-        (152, 39, 57),  # 23
-        (151, 35, 56),  # 24
-        (151, 37, 54),  # 25
-        (149, 43, 57),  # 26
-        (142, 48, 57),  # 27
-        (128, 47, 58),  # 28
-        (116, 48, 60),  # 29
-        (112, 45, 60),  # 30
-        (116, 39, 58),  # 31
-        (121, 37, 55),  # 32
-        (122, 39, 55),  # 33
-        (118, 44, 57),  # 34
-    ]
-
+def hide(request):
     im = Image.open(request.FILES['file'])
 
-    base = Image.open("pics/strut.gif")
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.hide)
 
-    frames = []
+    return Response({'url': url}, status=status.HTTP_200_OK)
 
-    for i in range(0, base.n_frames):
-        base.seek(i)
-        frame = base.convert('RGBA')
 
-        resized_im = resize(im, points[i][2] + 25)
+@api_view(['POST'])
+def chimp(request):
+    im = Image.open(request.FILES['file'])
 
-        head_width, head_height = resized_im.size
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.chimp)
 
-        half_width = int(head_width / 2)
-        half_height = int(head_height / 2)
+    return Response({'url': url}, status=status.HTTP_200_OK)
 
-        x = points[i][0] - half_width
-        y = points[i][1] - half_height
-        frame.paste(resized_im, (x, y), mask=resized_im)
 
-        # transparency
-        alpha = frame.split()[3]
-        frame = frame.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
-        mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
-        frame.paste(255, mask)
+@api_view(['POST'])
+def computer_kid(request):
+    im = Image.open(request.FILES['file'])
 
-        frames.append(frame)
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.computer_kid)
 
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+    return Response({'url': url}, status=status.HTTP_200_OK)
 
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=60,
-                   transparency=255,
-                   loop=0,
-                   optimize=True,
-                   quality=95,
-    )
 
-    url = upload_file(file_path, file_name)
+@api_view(['POST'])
+def toast(request):
+    im = Image.open(request.FILES['file'])
 
-    os.remove(file_path)
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.toast)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def fire(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.fire)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def trump(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.trump)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def clapping(request):
+    im = Image.open(request.FILES['file'])
+    converter = ImageEnhance.Color(im)
+    im = converter.enhance(0)
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.clapping)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def thinking(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.thinking)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def mind_blown(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.mind_blown)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+def left_hanging(request):
+    im = Image.open(request.FILES['file'])
+
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.left_hanging)
 
     return Response({'url': url}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def trapped(request):
-    points = [
-        (268, 109, 186),  # 1
-        (269, 111, 186),  # 2
-        (271, 124, 186),  # 3
-        (270, 136, 189),  # 4
-        (266, 130, 190),  # 5
-        (270, 129, 200),  # 6
-        (266, 131, 209),  # 7
-        (273, 132, 215),  # 8
-        (283, 129, 223),  # 9
-        (290, 121, 225),  # 10
-        (298, 117, 230),  # 11
-        (303, 111, 235),  # 12
-        (304, 109, 240),  # 13
-        (304, 103, 245),  # 14
-        (303, 94, 250),  # 15
-        (303, 96, 255),  # 16
-        (292, 98, 260),  # 17
-    ]
-
     im = Image.open(request.FILES['file'])
 
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.let_me_in)
 
-    base = Image.open("pics/conan.gif")
-    mask = Image.open("pics/mask.gif")
-    frames = []
+    return Response({'url': url}, status=status.HTTP_200_OK)
 
-    for i in range(0, base.n_frames):
-        base.seek(i)
-        resized_im = resize(im, points[i][2] + 30)
-        head_width, head_height = resized_im.size
 
-        half_width = int(head_width / 2)
-        half_height = int(head_height / 2)
+@api_view(['POST'])
+def javert(request):
+    im = Image.open(request.FILES['file'])
 
-        frame = base.convert('RGB')
-        x = points[i][0] - half_width
-        y = points[i][1] - half_height
-        frame.paste(resized_im, (x + 15, y - 10), mask=resized_im)
-
-        mask.seek(i)
-        msk = mask.convert('RGBA')
-        frame.paste(msk, mask=msk)
-
-        frames.append(frame)
-
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
-
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=135,
-                   transparency=255,
-                   loop=0,
-                   optimize=True,
-                   quality=95,
-                   )
-
-    url = upload_file(file_path, file_name)
-
-    os.remove(file_path)
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.javert)
 
     return Response({'url': url}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def wrecking_ball(request):
-    points = [
-        (112, 29),  # 1
-        (112, 29),  # 2
-        (113, 30),  # 3
-        (113, 30),  # 4
-        (114, 31),  # 5
-        (116, 31),  # 6
-        (116, 32),  # 7
-        (117, 33),  # 8
-        (118, 34),  # 9
-        (119, 37),  # 10
-        (119, 36),  # 11
-        (121, 38),  # 12
-        (123, 38),  # 13
-        (126, 41),  # 14
-        (126, 41),  # 15
-        (128, 43),  # 16
-        (130, 43),  # 17
-        (133, 45),  # 18
-        (134, 45),  # 19
-        (136, 45),  # 20
-        (140, 47),  # 21
-        (143, 47),  # 22
-        (144, 48),  # 23
-        (148, 49),  # 24
-        (150, 49),  # 25
-        (152, 50),  # 26
-        (159, 52),  # 27
-        (163, 53),  # 28
-        (171, 55),  # 29
-        (171, 55),  # 30
-        (176, 56),  # 31
-        (183, 57),  # 32
-        (188, 58),  # 33
-        (190, 58),  # 34
-        (193, 58),  # 35
-        (198, 59),  # 36
-        (202, 60),  # 37
-        (205, 60),  # 38
-        (209, 60),  # 39
-        (212, 60),  # 40
-        (214, 61),  # 41
-        (218, 62),  # 42
-        (220, 62),  # 43
-        (222, 62),  # 44
-        (224, 62),  # 45
-        (227, 63),  # 46
-        (227, 63),  # 47
-        (231, 65),  # 48
-        (232, 65),  # 49
-        (233, 66),  # 50
-        (233, 66),  # 51
-        (234, 67),  # 52
-        (234, 67),  # 53
-        (232, 67),  # 54
-        (233, 67),  # 55
-        (232, 68),  # 56
-        (232, 68),  # 57
-        (231, 68),  # 58
-        (231, 69),  # 59
-    ]
-
     im = Image.open(request.FILES['file'])
 
-    width, height = im.size
-    head_width = 60
-    resize_factor = width / head_width
-    head_height = int(height / resize_factor)
-    im = im.resize((head_width, head_height), Image.ANTIALIAS)
-    im = im.rotate(30)
-
-    half_width = int(head_width / 2)
-    half_height = int(head_height / 2)
-
-    base = Image.open("pics/wrecking_ball.gif")
-
-    frames = []
-
-    for i in range(0, base.n_frames):
-        print(i)
-        base.seek(i)
-        frame = base.convert('RGBA')
-        x = points[i][0] - half_width
-        y = points[i][1] - half_height
-        frame.paste(im, (x - 10, y), mask=im)
-
-        # transparency
-        alpha = frame.split()[3]
-        frame = frame.convert('RGB').convert('P', palette=Image.ADAPTIVE, colors=255)
-        mask = Image.eval(alpha, lambda a: 255 if a <= 128 else 0)
-        frame.paste(255, mask)
-
-        x, y = frame.size
-        x2, y2 = int(x / 2), int(y / 2)
-        frame = frame.resize((x2, y2), Image.ANTIALIAS)
-
-        frames.append(frame)
-
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
-
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=60,
-                   loop=0,
-                   optimize=True,
-                   quality=20,
-                   transparency=255
-                   )
-
-    url = upload_file(file_path, file_name)
-
-    os.remove(file_path)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def pennywise(request):
-    points = [
-        (None, None),  # 1
-        (None, None),  # 2
-        (None, None),  # 3
-        (None, None),  # 4
-        (None, None),  # 5
-        (None, None),  # 6
-        (None, None),  # 7
-        (None, None),  # 8
-        (None, None),  # 9
-        (None, None),  # 10
-        (None, None),  # 11
-        (None, None),  # 12
-        (None, None),  # 13
-        (None, None),  # 14
-        (None, None),  # 15
-        (None, None),  # 16
-        (None, None),  # 17
-        (None, None),  # 18
-        (None, None),  # 19
-        (None, None),  # 20
-        (None, None),  # 21
-        (None, None),  # 22
-        (None, None),  # 23
-        (None, None),  # 24
-        (None, None),  # 25
-        (None, None),  # 26
-        (None, None),  # 27
-        (None, None),  # 28
-        (None, None),  # 29
-        (None, None),  # 30
-        (None, None),  # 31
-        (None, None),  # 32
-        (None, None),  # 33
-        (None, None),  # 34
-        (None, None),  # 35
-        (None, None),  # 36
-        (None, None),  # 37
-        (None, None),  # 38
-        (282, 92, 0.10),  # 39
-        (283, 87, 0.20),  # 40
-        (282, 85, 0.30),  # 41
-        (281, 82, 0.40),  # 42
-        (280, 80, 0.50),  # 43
-        (280, 79, 0.60),  # 44
-        (280, 78, 0.70),  # 45
-        (280, 77, 0.80),  # 46
-        (280, 76, 0.90),  # 47
-        (280, 76),  # 48
-        (279, 76),  # 49
-        (None, None),  # 50
-        (None, None),  # 51
-        (None, None),  # 52
-        (None, None),  # 53
-        (None, None),  # 54
-        (None, None),  # 55
-        (None, None),  # 56
-        (None, None),  # 57
-        (None, None),  # 58
-        (None, None),  # 59
-        (None, None),  # 60
-        (None, None),  # 61
-        (None, None),  # 62
-        (None, None),  # 63
-        (258, 59),  # 64
-        (258, 59),  # 65
-        (258, 59),  # 66
-        (258, 59),  # 67
-        (258, 59),  # 68
-        (258, 59),  # 69
-        (258, 59),  # 70
-        (258, 59),  # 71
-        (258, 59),  # 72
-        (258, 59),  # 73
-        (260, 60),  # 74
-        (261, 60),  # 75
-        (263, 60),  # 76
-        (263, 60),  # 77
-        (264, 61),  # 78
-        (266, 63),  # 79
-        (269, 63),  # 80
-    ]
-
-    im = Image.open(request.FILES['file'])
-
-    width, height = im.size
-    head_height = 200
-    resize_factor = height / head_height
-    head_width = int(width / resize_factor)
-    im = im.resize((head_width, head_height), Image.ANTIALIAS)
-
-    half_width = int(head_width / 2)
-    half_height = int(head_height / 2)
-
-    base = Image.open("pics/pennywise.gif")
-    mask = Image.open("pics/pennywise_mask.gif")
-    frames = []
-
-    for i in range(0, base.n_frames):
-        base.seek(i)
-        frame = base.convert('RGB')
-        if points[i][0] is not None:
-            full_brightness = 0.2
-            x = points[i][0] - half_width
-            y = points[i][1] - half_height
-            enhancer = ImageEnhance.Brightness(im)
-            enhanced_im = enhancer.enhance(full_brightness * (points[i][2] if len(points[i]) == 3 else 1))
-            frame.paste(enhanced_im, (x + 10, y), mask=enhanced_im)
-
-            mask.seek(i)
-            msk = mask.convert('RGBA')
-            frame.paste(msk, mask=msk)
-
-        x, y = frame.size
-        x2, y2 = int(x / 1.5), int(y / 1.5)
-        frame = frame.resize((x2, y2), Image.ANTIALIAS)
-
-        frames.append(frame)
-
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
-
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=100,
-                   loop=0,
-                   optimize=True,
-                   quality=20,
-                   transparency=255
-                   )
-
-    url = upload_file(file_path, file_name)
-
-    os.remove(file_path)
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.wrecking_ball)
 
     return Response({'url': url}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
 def heres_johnny(request):
-    points = [
-        (None, None),  # 1
-        (None, None),  # 2
-        (None, None),  # 3
-        (None, None),  # 4
-        (None, None),  # 5
-        (None, None),  # 6
-        (None, None),  # 7
-        (None, None),  # 8
-        (None, None),  # 9
-        (None, None),  # 10
-        (None, None),  # 11
-        (None, None),  # 12
-        (None, None),  # 13
-        (None, None),  # 14
-        (None, None),  # 15
-        (None, None),  # 16
-        (None, None),  # 17
-        (None, None),  # 18
-        (None, None),  # 19
-        (306, 114, 135),  # 20
-        (286, 126, 120),  # 21
-        (283, 133, 115),  # 22
-        (282, 161, 120),  # 23
-        (290, 166, 120),  # 24
-        (300, 175, 115),  # 25
-        (303, 169, 115),  # 26
-        (288, 146, 110),  # 27
-        (270, 152, 108),  # 28
-        (253, 166, 100),  # 29
-        (250, 161, 100),  # 30
-        (258, 156, 102),  # 31
-        (269, 159, 104),  # 32
-        (288, 164, 108),  # 33
-        (311, 173, 105),  # 34
-        (344, 165, 105),  # 35
-        (355, 153, 105),  # 36
-        (376, 153, 108),  # 37
-        (380, 150, 108),  # 38
-        (380, 150, 107),  # 39
-        (380, 156, 103),  # 40
-        (380, 162, 102),  # 41
-        (375, 169, 101),  # 42
-        (377, 179, 98),  # 43
-        (385, 177, 100),  # 44
-        (430, 180, 100),  # 45
-        (437, 179, 103),  # 46
-        (459, 204, 105),  # 47
-        (470, 213, 105),  # 48
-        (470, 213, 110),  # 49
-        (469, 193, 120),  # 50
-        (422, 209, 130),  # 51
-        (365, 185, 135),  # 52
-        (288, 187, 132),  # 53
-        (260, 200, 128),  # 54
-        (251, 196, 130),  # 55
-        (266, 193, 135),  # 56
-        (285, 201, 140),  # 57
-        (306, 223, 150),  # 58
-        (326, 245, 160),  # 59
-        (340, 256, 163),  # 60
-        (352, 256, 167),  # 61
-        (None, None),  # 62
-        (None, None),  # 63
-        (None, None),  # 64
-        (None, None),  # 65
-        (None, None),  # 66
-        (None, None),  # 67
-        (None, None),  # 68
-        (None, None),  # 69
-        (None, None),  # 70
-        (None, None),  # 71
-        (None, None),  # 72
-        (None, None),  # 73
-        (None, None),  # 74
-        (None, None),  # 75
-        (None, None),  # 76
-        (None, None),  # 77
-        (None, None),  # 78
-        (None, None),  # 79
-        (None, None),  # 80
-        (310, 110, 430),  # 81
-        (300, 100, 430),  # 82
-        (310, 90, 430),  # 83
-        (320, 110, 430),  # 84
-        (310, 90, 430),  # 85
-        (300, 110, 430),  # 86
-        (310, 100, 430),  # 87
-        (320, 110, 430),  # 88
-        (310, 90, 430),  # 89
-        (300, 110, 430),  # 90
-        (320, 100, 430),  # 91
-        (300, 110, 430),  # 92
-        (310, 90, 430),  # 93
-        (300, 110, 430),  # 94
-        (320, 110, 430),  # 95
-        (340, 90, 430),  # 96
-        (310, 110, 430),  # 97
-        (300, 110, 430),  # 98
-        (290, 140, 430),  # 99
-        (310, 110, 430),  # 100
-    ]
-
     im = Image.open(request.FILES['file'])
 
-    base = Image.open("pics/johnny.gif")
-    mask = Image.open("pics/johnny_mask.gif")
-    frames = []
-
-    for i in range(0, base.n_frames):
-        base.seek(i)
-        frame = base.convert('RGB')
-
-        if points[i][0] is not None:
-            resized_im = resize(im, points[i][2] + 40)
-
-            head_width, head_height = resized_im.size
-
-            half_width = int(head_width / 2)
-            half_height = int(head_height / 2)
-            x = points[i][0] - half_width
-            y = points[i][1] - half_height
-
-            frame.paste(resized_im, (points[i][0] - half_width, points[i][1] - half_height), mask=resized_im)
-
-            mask.seek(i)
-            msk = mask.convert('RGBA')
-            frame.paste(msk, mask=msk)
-
-        x, y = frame.size
-        x2, y2 = int(x / 1.5), int(y / 1.5)
-        frame = frame.resize((x2, y2), Image.ANTIALIAS)
-
-        frames.append(frame)
-
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
-
-    frames[0].save(file_path,
-                   save_all=True,
-                   disposal=2,
-                   append_images=frames[1:],
-                   duration=100,
-                   loop=0,
-                   optimize=True,
-                   quality=20,
-                   transparency=255
-                   )
-
-    url = upload_file(file_path, file_name)
-
-    os.remove(file_path)
+    url = get_generated_gif_url(payload=im, gif_type=gifs_data.heres_johnny)
 
     return Response({'url': url}, status=status.HTTP_200_OK)

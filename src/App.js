@@ -16,6 +16,7 @@ class App extends React.Component {
 
     getContent = () => {
         const doStuff = () => {
+            if (!this.state.file) return;
             this.setState({ loading: true });
             const formData = new FormData();
             formData.append("file", this.state.file, this.state.file.name);
@@ -104,8 +105,20 @@ class App extends React.Component {
                             <option value="strut">:STRUT:</option>
                             <option value="trapped">:LET_ME_IN:</option>
                             <option value="wrecking-ball">:WRECKING_BALL:</option>
-                            <option value="pennywise">:PENNYWISE:</option>
                             <option value="heres-johnny">:HERES_JOHNNY:</option>
+                            <option value="javert">:JAVERT:</option>
+                            <option value="time">:TIME:</option>
+                            <option value="left-hanging">:LEFT_HANGING:</option>
+                            <option value="thinking">:THINKING:</option>
+                            <option value="trump">:TRUMP:</option>
+                            <option value="hide">:HIDE:</option>
+                            <option value="begging">:BEGGING:</option>
+                            <option value="chimp">:CHIMP:</option>
+                            <option value="fire">:FIRE:</option>
+                            <option value="computer_kid">:COMPUTER_KID:</option>
+                            <option value="toast">:TOAST:</option>
+                            <option value="clapping">:CLAPPING:</option>
+                            <option value="mind_blown">:MIND_BLOWN:</option>
                         </select>
                         <div/>
                     </div>
@@ -128,7 +141,7 @@ class App extends React.Component {
                 </div>
                 <ol>
                     <li>
-                        Open up your picture in Preview. If you don't have a Mac, start <a href="https://shorturl.at/xACM2">here.</a>
+                        Open up your picture in Preview. If you don't have a Mac, start <a href="https://www.apple.com/shop/buy-mac/macbook-pro">here.</a>
                     </li>
                     <li>
                         Click on the toolbox or pen button the upper right hand corner, then select the lasso tool.
@@ -145,7 +158,7 @@ class App extends React.Component {
 
         const howtoemoji = (
             <main className="help-section">
-                <img className="gif" src="http://i.imgur.com/DHRYpiZ.gif" />
+                <img className="gif" src="https://media.giphy.com/media/iJIkiyiuGQA81nqOpF/giphy.gif" />
                 <div className="section-title">
                     How to upload an emoji to slack
                 </div>
