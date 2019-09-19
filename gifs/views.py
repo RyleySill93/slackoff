@@ -10,8 +10,45 @@ from rest_framework.response import Response
 from rest_framework import status
 from gifs.image_data import TrackedElement
 from gifs import gifs_data
+from .models import Image as ImageModel
 
 S3_BUCKET = os.environ.get('S3_BUCKET')
+
+
+
+type_map = dict(
+    disappears=gifs_data.disappears,
+)
+
+@api_view(['GET'])
+def get_urls(request):
+    s3_client = boto3.client('s3')
+
+    urls = []
+
+    for image in ImageModel.objects.all():
+        params = {'Bucket': S3_BUCKET, 'Key': image.s3_key}
+        url = s3_client.generate_presigned_url('get_object', params)
+        urls.append(dict(
+            url=url,
+            type=image.type,
+            width=image.width,
+            height=image.height,
+        ))
+
+    return Response(urls, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def get_gifs(request):
+    s3_client = boto3.client('s3')
+
+    urls = []
+
+    params = {'Bucket': S3_BUCKET, 'Key': 'types/{}.gif'.format(request.GET['type'])}
+    url = s3_client.generate_presigned_url('get_object', params)
+
+    return Response({'url': url}, status=status.HTTP_200_OK)
 
 
 def upload_file(file_path, file_name):
@@ -27,10 +64,10 @@ def upload_file(file_path, file_name):
     return url
 
 def get_file_name_path():
-    file_name = '{}.gif'.format(uuid.uuid1())
-    file_path = '{}/pics/{}'.format(BASE_DIR, file_name)
+    filename = str(uuid.uuid1())
+    file_path = '{}/pics/{}'.format(BASE_DIR, '{}.gif'.format(filename))
 
-    return file_name, file_path
+    return filename, file_path
 
 def get_duration(img):
     img = Image.open(img)
@@ -54,13 +91,22 @@ def get_generated_gif_url(payload, gif_type, reverse=False):
     if reverse:
         frames.reverse()
 
-    file_name, file_path = get_file_name_path()
+    key, file_path = get_file_name_path()
 
     duration = get_duration(gif_type.background_image_path)
 
+    width, height = frames[0].size
+
     save_gif(file_path, frames, duration=duration)
 
-    url = upload_file(file_path, file_name)
+    url = upload_file(file_path, key)
+
+    ImageModel.objects.create(
+        s3_key=key,
+        type=gif_type.type,
+        width=width,
+        height=height,
+    )
 
     os.remove(file_path)
 
@@ -463,7 +509,7 @@ def time(request):
 
 
 @api_view(['POST'])
-def carlton_dance(request):
+def carlton(request):
     im = Image.open(request.FILES['file'])
 
     url = get_generated_gif_url(payload=im, gif_type=gifs_data.carlton)
@@ -472,7 +518,7 @@ def carlton_dance(request):
 
 
 @api_view(['POST'])
-def rap_battle(request):
+def supa_hot_fire(request):
 
     im = Image.open(request.FILES['file'])
 

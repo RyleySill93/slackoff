@@ -61,6 +61,7 @@ adjustments = [
 ]
 
 disappears = ImageData(
+    type='disappears',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/homer.gif',

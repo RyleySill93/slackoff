@@ -65,6 +65,7 @@ adjustments = [
 ]
 
 time = ImageData(
+    type='time',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/time.gif',

@@ -31,6 +31,7 @@ adjustments = [
 ]
 
 begging = ImageData(
+    type='begging',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/begging.gif',

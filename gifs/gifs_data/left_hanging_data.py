@@ -86,6 +86,7 @@ adjustments = [
 ]
 
 left_hanging = ImageData(
+    type='left_hanging',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/left_hanging.gif',

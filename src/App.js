@@ -1,11 +1,22 @@
 import React from 'react';
 import './App.css';
+import {withStyles} from "@material-ui/core";
+
 import axios from 'axios';
 import Dropzone from 'react-dropzone'
-import { BrowserRouter as Router, Route, Link, withRouter } from "react-router-dom";
+import { BrowserRouter as Router, Route, Link, withRouter, Switch } from "react-router-dom";
+import GridList from '@material-ui/core/GridList';
+import GridListTile from '@material-ui/core/GridListTile';
+import Masonry from 'react-masonry-component';
+import Image from './Gif';
+import Detail from './Detail';
 
 
-class App extends React.Component {
+var Jimp = require('jimp');
+
+
+
+class Meow extends React.Component {
     state = {
         url: '',
         file: null,
@@ -20,7 +31,7 @@ class App extends React.Component {
             this.setState({ loading: true });
             const formData = new FormData();
             formData.append("file", this.state.file, this.state.file.name);
-            axios.post(`${window.location.origin}/${this.state.style}/`, formData).then(res => {
+            axios.post(`http://localhost:8000/${this.state.style}/`, formData).then(res => {
                 this.setState({ url: res.data.url })
             })
                 .finally(() => this.setState({ loading: false }));
@@ -69,7 +80,7 @@ class App extends React.Component {
             <main className="App-main">
                 <div className="column">
                     <div className="step">1. UPLOAD FACE</div>
-                    <Link className="caption" to="/how-to-cut-out-a-face">how do I get a face cutout from a picture?</Link>
+
                     <div className="button-holder">
                         <input type="file" id="upload-photo" hidden onChange={event => uploadFile(event.target.files[0])} />
                         {
@@ -133,39 +144,6 @@ class App extends React.Component {
             </main>
         );
 
-        const howtoface = (
-            <main className="help-section">
-                <img className="gif" src="http://i.imgur.com/DHRYpiZ.gif" />
-                <div className="section-title">
-                    How to cut out a face from a picture
-                </div>
-                <ol>
-                    <li>
-                        Open up your picture in Preview. If you don't have a Mac, start <a href="https://www.apple.com/shop/buy-mac/macbook-pro">here.</a>
-                    </li>
-                    <li>
-                        Click on the toolbox or pen button the upper right hand corner, then select the lasso tool.
-                    </li>
-                    <img className="gif" src="https://media.giphy.com/media/hqljpSlE9NWsCqO94Q/giphy.gif" />
-                    <li>
-                        Carefully cut the face out of the picture. When you're done, click crop and convert.
-                    </li>
-                    <img className="gif" src="https://media.giphy.com/media/dxTpaE9A6TXGdRXb9u/giphy.gif" />
-                </ol>
-            </main>
-        );
-
-
-        const howtoemoji = (
-            <main className="help-section">
-                <img className="gif" src="https://media.giphy.com/media/iJIkiyiuGQA81nqOpF/giphy.gif" />
-                <div className="section-title">
-                    How to upload an emoji to slack
-                </div>
-
-            </main>
-        );
-
         return (
             <Router>
               <div className="App">
@@ -175,12 +153,144 @@ class App extends React.Component {
                     </Link>
                 </header>
                 <Route exact path="/" component={() => app} />
-                <Route path="/how-to-cut-out-a-face" component={ () => howtoface} />
-                <Route path="/how-to-upload-an-emoji" component={ () => howtoemoji} />
               </div>
             </Router>
         )
     }
 }
 
-export default App;
+
+const styles = {
+    width: {
+        width: 1100,
+        margin: '0 auto',
+    }
+}
+
+class App extends React.Component {
+    state = {
+        url: '',
+        file: true,
+        style: 'intensify',
+        fileUrl: '',
+        loading: false,
+        imageUrls: [],
+    };
+
+    getContent = () => {
+        const doStuff = () => {
+            if (!this.state.file) return;
+            this.setState({ loading: true });
+            const formData = new FormData();
+            formData.append("file", this.state.file, this.state.file.name);
+            axios.post(`${window.location.origin}/${this.state.style}/`, formData).then(res => {
+                this.setState({ url: res.data.url })
+            }).finally(() => this.setState({ loading: false }));
+        };
+
+        if (this.state.loading) {
+            return (
+                <React.Fragment>
+                    <div/>
+                    <div className="loader">Loading...</div>
+                    <div/>
+                </React.Fragment>
+            )
+        } else if (this.state.url) {
+            return (
+                <React.Fragment>
+                    <div/>
+                    <img style={{ height: 200 }} src={this.state.url} />
+                    <div className="another-one">
+                        <img className="dj-khaled" style={{ width: 100 }} src={require('./khaled.png')} />
+                        <button className="button" onClick={doStuff}>ANOTHER ONE</button>
+                    </div>
+                </React.Fragment>
+            )
+        }
+
+        return (
+            <React.Fragment>
+                <div/>
+                <button className="button" onClick={doStuff}>CLICK ME</button>
+                <div/>
+            </React.Fragment>
+        )
+    }
+
+    componentDidMount(){
+        fetch('https://i.imgur.com/LuF7JAs.png?1').then(response => {
+          response.blob().then(blobResponse => {
+            const urlCreator = window.URL || window.webkitURL;
+            const fileUrl = urlCreator.createObjectURL(blobResponse);
+            this.setState({fileUrl})
+          })
+        })
+
+        axios.get('http://localhost:8000/gifs/').then(res => {
+            this.setState({imageUrls: res.data})
+        }).catch(err => {
+            debugger
+        })
+    }
+
+    render() {
+        const { classes } = this.props;
+        const uploadFile = (file) => {
+            this.setState({ file, fileUrl: URL.createObjectURL(file) });
+        };
+
+        function openDialog() {
+          document.getElementById('upload-photo').click();
+        }
+
+        const rotate = () => {
+            Jimp.read(this.state.fileUrl)
+            .then(image => {
+                debugger
+                image.rotate(30).getBase64(Jimp.AUTO, (err, res) => {
+                    this.setState({fileUrl: res})
+                console.log(res)
+              })
+                debugger
+            })
+            .catch(err => {
+                debugger
+            })
+        }
+
+        return (
+            <Router>
+              <div className="App">
+                <header className="header">
+                    <Link className="title" to="/">
+                        slackoff.
+                    </Link>
+                </header>
+                  <Switch>
+                      <Route
+                          path="/:type"
+                          render={routeProps => (
+                              <Detail type={routeProps.match.params.type} />
+                          )}
+                      />
+                      <Route
+                          path="/"
+                          render={() => (
+                              <div className={classes.width}>
+                                  <Masonry>
+                                      {
+                                        this.state.imageUrls.slice(0,3).map(image => <Image url={image.url} type={image.type} />)
+                                    }
+                                  </Masonry>
+                              </div>
+                          )}
+                      />
+                  </Switch>
+              </div>
+            </Router>
+        )
+    }
+}
+
+export default withStyles(styles)(Meow);

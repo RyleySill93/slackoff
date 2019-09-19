@@ -56,6 +56,7 @@ adjustments = [
 ]
 
 computer_kid = ImageData(
+    type='computer_kid',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/computer_kid.gif',

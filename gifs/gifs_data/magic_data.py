@@ -56,6 +56,7 @@ adjustments = [
 ]
 
 magic = ImageData(
+    type='magic',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/magic.gif',

@@ -24,8 +24,8 @@ urlpatterns = [
     path('detective/', views.detective),
     path('disappears/', views.disappears),
     path('appears/', views.appears),
-    path('carlton_dance/', views.carlton_dance),
-    path('rap_battle/', views.rap_battle),
+    path('carlton/', views.carlton),
+    path('supa_hot_fire/', views.supa_hot_fire),
     path('strut/', views.strut),
     path('trapped/', views.trapped),
     path('wrecking-ball/', views.wrecking_ball),
@@ -43,5 +43,8 @@ urlpatterns = [
     path('toast/', views.toast),
     path('clapping/', views.clapping),
     path('mind_blown/', views.mind_blown),
+    path('gifs/', views.get_urls),
+    path('types', views.get_gifs),
+
     re_path('.*', TemplateView.as_view(template_name='index.html')),
 ]

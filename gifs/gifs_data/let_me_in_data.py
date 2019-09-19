@@ -28,6 +28,7 @@ adjustments = [
 ]
 
 let_me_in = ImageData(
+    type='let_me_in',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/conan.gif',

@@ -45,6 +45,7 @@ adjustments = [
 ]
 
 strut = ImageData(
+    type='strut',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/strut.gif',

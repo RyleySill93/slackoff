@@ -74,6 +74,7 @@ adjustments = [
 ]
 
 wrecking_ball = ImageData(
+    type='wrecking_ball',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/wrecking_ball.gif',

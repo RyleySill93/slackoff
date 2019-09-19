@@ -26,6 +26,7 @@ adjustments = [
 ]
 
 clapping = ImageData(
+    type='clapping',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/clapping.gif',

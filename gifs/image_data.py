@@ -1,6 +1,7 @@
 class ImageData:
     def __init__(
         self,
+        type,
         background_image_path,
         frames_data,
         tracked_elements,
@@ -8,6 +9,7 @@ class ImageData:
         foreground_image_path=None,
         foreground_indicies=[],
     ):
+        self.type = type
         self.background_image_path = background_image_path
         self.frames_data = frames_data
         self.tracked_elements = tracked_elements

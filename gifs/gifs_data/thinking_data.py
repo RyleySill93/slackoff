@@ -30,6 +30,7 @@ adjustments = [
 ]
 
 thinking = ImageData(
+    type='thinking',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/thinking.gif',
