@@ -61,7 +61,7 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=supahot.id)
 ]
 
-supa_hot_fire = ImageData(
+image_data = ImageData(
     type='supa_hot_fire',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
@@ -69,5 +69,7 @@ supa_hot_fire = ImageData(
     foreground_image_path='pics/rapmask.gif',
     adjustments=adjustments,
     foreground_indicies=[*range(24, 50)],
+    width=320,
+    height=240,
 )
 

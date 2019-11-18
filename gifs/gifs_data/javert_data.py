@@ -40,7 +40,7 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=jav.id, height=50, rotation=-10, x=-10)
 ]
 
-javert = ImageData(
+image_data = ImageData(
     type='javert',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
@@ -48,4 +48,6 @@ javert = ImageData(
     foreground_image_path='pics/javert_mask.gif',
     adjustments=adjustments,
     foreground_indicies=[*range(len(frames_data))],
+    width=175,
+    height=200,
 )

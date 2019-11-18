@@ -44,11 +44,13 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=vince.id, height=30)
 ]
 
-strut = ImageData(
+image_data = ImageData(
     type='strut',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/strut.gif',
     adjustments=adjustments,
+    width=270,
+    height=252,
 )
 

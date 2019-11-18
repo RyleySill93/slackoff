@@ -55,10 +55,12 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=kid.id)
 ]
 
-computer_kid = ImageData(
+image_data = ImageData(
     type='computer_kid',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/computer_kid.gif',
     adjustments=adjustments,
+    width=320,
+    height=240,
 )

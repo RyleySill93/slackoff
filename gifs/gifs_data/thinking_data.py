@@ -29,11 +29,13 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=dude.id, x=15, height=30, y=-15)
 ]
 
-thinking = ImageData(
+image_data = ImageData(
     type='thinking',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/thinking.gif',
     adjustments=adjustments,
+    width=480,
+    height=268,
 )
 

@@ -29,11 +29,13 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=leo.id, height=10, y=-10, x=-8)
 ]
 
-toast = ImageData(
+image_data = ImageData(
     type='toast',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/toast.gif',
     foreground_image_path='pics/toast_mask.gif',
     adjustments=adjustments,
+    width=500,
+    height=239,
 )

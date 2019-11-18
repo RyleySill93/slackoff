@@ -27,7 +27,7 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=conan.id, height=30, x=15, y=10)
 ]
 
-let_me_in = ImageData(
+image_data = ImageData(
     type='let_me_in',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
@@ -35,5 +35,7 @@ let_me_in = ImageData(
     foreground_image_path='pics/mask.gif',
     foreground_indicies=list(range(len(frames_data))),
     adjustments=adjustments,
+    width=440,
+    height=237,
 )
 

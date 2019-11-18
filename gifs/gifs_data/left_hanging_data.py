@@ -85,10 +85,12 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=judy.id, x=-10, y=-12, height=20, rotation=-15)
 ]
 
-left_hanging = ImageData(
+image_data = ImageData(
     type='left_hanging',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/left_hanging.gif',
     adjustments=adjustments,
+    width=450,
+    height=342,
 )

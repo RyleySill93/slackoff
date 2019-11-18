@@ -22,7 +22,7 @@ class Gifs extends React.Component {
     };
 
     componentDidMount(){
-        axios.get('http://localhost:8000/gifs/').then(res => {
+        axios.get('http://localhost:8000/gifs/types/').then(res => {
             this.setState({imageUrls: res.data})
         }).catch(err => {
             debugger

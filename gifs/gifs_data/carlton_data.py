@@ -34,11 +34,13 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=carlton.id, x=10)
 ]
 
-carlton = ImageData(
+image_data = ImageData(
     type='carlton',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/carlton.gif',
     adjustments=adjustments,
+    width=213,
+    height=480,
 )
 

@@ -55,11 +55,13 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=shia.id, x=0, height=20)
 ]
 
-magic = ImageData(
+image_data = ImageData(
     type='magic',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/magic.gif',
     foreground_image_path='pics/magic_mask.gif',
     adjustments=adjustments,
+    width=480,
+    height=239,
 )

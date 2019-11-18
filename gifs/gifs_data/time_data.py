@@ -64,10 +64,12 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=judy.id, x=-33, y=-8, height=20, rotation=14)
 ]
 
-time = ImageData(
+image_data = ImageData(
     type='time',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/time.gif',
     adjustments=adjustments,
+    width=277,
+    height=200,
 )

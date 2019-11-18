@@ -60,12 +60,14 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=neil.id, height=50, y=10)
 ]
 
-mind_blown = ImageData(
+image_data = ImageData(
     type='mind_blown',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/mind_blown.gif',
     foreground_image_path='pics/mind_blown_mask.gif',
     adjustments=adjustments,
+    width=480,
+    height=480,
 )
 

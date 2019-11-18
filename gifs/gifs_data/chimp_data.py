@@ -81,12 +81,14 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=dude.id, height=20)
 ]
 
-chimp = ImageData(
+image_data = ImageData(
     type='chimp',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/chimp.gif',
     adjustments=adjustments,
     foreground_indicies=list(range(len(frames_data))),
+    width=225,
+    height=200,
 )
 

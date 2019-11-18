@@ -51,7 +51,7 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=trump_face.id, height=20, x=-30)
 ]
 
-trump = ImageData(
+image_data = ImageData(
     type='trump',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
@@ -59,5 +59,7 @@ trump = ImageData(
     foreground_image_path='pics/trump_mask.gif',
     adjustments=adjustments,
     foreground_indicies=list(range(len(frames_data))),
+    width=434,
+    height=528,
 )
 

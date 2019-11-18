@@ -30,12 +30,14 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=kid.id, x=-10, y=-10, height=10, rotation=8)
 ]
 
-begging = ImageData(
+image_data = ImageData(
     type='begging',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/begging.gif',
     adjustments=adjustments,
     foreground_indicies=list(range(len(frames_data))),
+    width=480,
+    height=239,
 )
 

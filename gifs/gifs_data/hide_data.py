@@ -28,7 +28,7 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=dude.id, x=-30, height=40)
 ]
 
-hide = ImageData(
+image_data = ImageData(
     type='hide',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
@@ -36,5 +36,7 @@ hide = ImageData(
     foreground_image_path='pics/hide_mask.gif',
     adjustments=adjustments,
     foreground_indicies=list(range(len(frames_data))),
+    width=500,
+    height=289,
 )
 

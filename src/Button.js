@@ -36,7 +36,7 @@ const styles = {
 
 function Button(props) {
     return (
-        <button { ...props } className={props.classes.button}>
+        <button className={props.classes.button}>
             { props.children }
         </button>
     )

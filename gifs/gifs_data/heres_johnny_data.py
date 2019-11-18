@@ -72,13 +72,15 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=jack.id, height=40)
 ]
 
-heres_johnny = ImageData(
+image_data = ImageData(
     type='heres_johnny',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/johnny.gif',
     foreground_image_path='pics/johnny_mask.gif',
     adjustments=adjustments,
-    foreground_indicies=[el.index for el in frames_data]
+    foreground_indicies=[el.index for el in frames_data],
+    width=600,
+    height=311,
 )
 

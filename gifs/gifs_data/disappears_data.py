@@ -60,7 +60,7 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=homer.id, x=8)
 ]
 
-disappears = ImageData(
+image_data = ImageData(
     type='disappears',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
@@ -68,5 +68,7 @@ disappears = ImageData(
     foreground_image_path='pics/homermask.gif',
     adjustments=adjustments,
     foreground_indicies=[*range(23, len(frames_data))],
+    width=480,
+    height=354,
 )
 

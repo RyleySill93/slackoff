@@ -73,10 +73,12 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=miley.id, x=-13, height=10)
 ]
 
-wrecking_ball = ImageData(
+image_data = ImageData(
     type='wrecking_ball',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/wrecking_ball.gif',
     adjustments=adjustments,
+    width=480,
+    height=268,
 )

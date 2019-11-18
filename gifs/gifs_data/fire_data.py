@@ -39,10 +39,12 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=donald.id)
 ]
 
-fire = ImageData(
+image_data = ImageData(
     type='fire',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/fire.gif',
     adjustments=adjustments,
+    width=340,
+    height=347,
 )

@@ -6,6 +6,8 @@ class ImageData:
         frames_data,
         tracked_elements,
         adjustments,
+        width,
+        height,
         foreground_image_path=None,
         foreground_indicies=[],
     ):
@@ -14,6 +16,8 @@ class ImageData:
         self.frames_data = frames_data
         self.tracked_elements = tracked_elements
         self.adjustments = adjustments
+        self.width = width
+        self.height = height
         self.foreground_image_path = foreground_image_path
         self.foreground_indicies = foreground_indicies or list(range(0, len(frames_data)))
 
@@ -70,8 +74,8 @@ class TrackedElementPosition:
         x=None,
         y=None,
         z=None,
-        width=None,
-        height=None,
+        width=0,
+        height=0,
         rotation=None,
         brightness=None,
     ):

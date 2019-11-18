@@ -11,6 +11,7 @@ from rest_framework import status
 from gifs.image_data import TrackedElement
 from gifs import gifs_data
 from .models import Image as ImageModel
+from gifs.gifs_data import types
 
 S3_BUCKET = os.environ.get('S3_BUCKET')
 
@@ -34,6 +35,25 @@ def get_urls(request):
             type=image.type,
             width=image.width,
             height=image.height,
+        ))
+
+    return Response(urls, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def get_gif_types(request):
+    s3_client = boto3.client('s3')
+
+    urls = []
+
+    for image_type in types:
+        params = {'Bucket': S3_BUCKET, 'Key': 'types/{}.gif'.format(image_type.image_data.type)}
+        url = s3_client.generate_presigned_url('get_object', params)
+        urls.append(dict(
+            url=url,
+            type=image_type.image_data.type,
+            width=image_type.image_data.width,
+            height=image_type.image_data.height,
         ))
 
     return Response(urls, status=status.HTTP_200_OK)
@@ -83,10 +103,13 @@ def get_duration(img):
 
 
 def get_generated_gif_url(payload, gif_type, reverse=False):
-    frames = generate_gif_frames(gif_type, [TrackedElement(
-        id=1,
-        image_file=payload,
-    )])
+    frames = generate_gif_frames(gif_type, [
+        TrackedElement(
+            id=i + 1,
+            image_file=Image.open(payload['file/{}'.format(i)]),
+        )
+        for i, element in enumerate(payload)
+    ])
 
     if reverse:
         frames.reverse()
@@ -369,296 +392,13 @@ def detective(request):
 
 
 @api_view(['POST'])
-def approves(request):
-    im = prep_file(request.FILES['file'])
+def make_gif(request):
+    if request.data['type'] == 'clapping':
+        im = Image.open(request.FILES['file'])
+        converter = ImageEnhance.Color(im)
+        im = converter.enhance(0)
 
-
-def bush_frames(file, emerge=False):
-    points = [
-        (242, 100),  # 1
-        (242, 100),  # 2
-        (242, 100),  # 3
-        (242, 100),  # 4
-        (242, 100),  # 5
-        (242, 100),  # 6
-        (242, 100),  # 7
-        (242, 100),  # 8
-        (244, 100),  # 9
-        (240, 100),  # 10
-        (241, 100),  # 11
-        (248, 104),  # 12
-        (248, 104),  # 13
-        (250, 105),  # 14
-        (248, 107),  # 15
-        (249, 106),  # 16
-        (252, 108),  # 17
-        (255, 111),  # 18
-        (257, 112),  # 19
-        (259, 113),  # 20
-        (262, 115),  # 21
-        (262, 115),  # 22
-        (266, 119),  # 23
-        (269, 118),  # 24
-        (273, 121),  # 25
-        (276, 122),  # 26
-        (278, 122),  # 27
-        (279, 122),  # 28
-        (275, 123),  # 29
-        (276, 121),  # 30
-        (277, 121),  # 31
-        (280, 123),  # 32
-        (277, 123),  # 33
-        (277, 123),  # 34
-        (272, 123),  # 35
-        (272, 122),  # 36
-        (266, 124),  # 37
-        (265, 123),  # 38
-        (265, 123),  # 39
-        (267, 123),  # 40
-        (268, 124),  # 41
-        (268, 123),  # 42
-        (270, 123),  # 43
-        (272, 122),  # 44
-        (272, 122),  # 45
-        (276, 123),  # 46
-        (276, 123),  # 47
-        (276, 123),  # 48
-        (276, 123),  # 49
-        (276, 123),  # 50
-    ]
-
-    im = Image.open(file)
-
-    width, height = im.size
-    head_width = 130
-    resize_factor = width / head_width
-    head_height = int(height / resize_factor)
-    im = im.resize((head_width, head_height), Image.ANTIALIAS)
-
-    half_width = int(head_width / 2)
-    half_height = int(head_height / 2)
-
-    base_homer = Image.open("pics/homer.gif")
-    mask_homer = Image.open("pics/homermask.gif")
-    frames = []
-
-    for i in range(0, base_homer.n_frames):
-        base_homer.seek(i)
-        frame = base_homer.convert('RGB')
-        if i < len(points):
-            x = points[i][0] - half_width
-            y = points[i][1] - half_height
-            frame.paste(im, (x + 10, y), mask=im)
-
-            if i >= 23:
-                mask_homer.seek(i - 23)
-                mask = mask_homer.convert('RGBA')
-                frame.paste(mask, mask=mask)
-
-        frames.append(frame)
-
-    if emerge:
-        frames.reverse()
-
-    return frames
-
-
-@api_view(['POST'])
-def disappears(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.disappears)
+    url = get_generated_gif_url(payload=request.FILES, gif_type=getattr(gifs_data, request.data['type']))
 
     return Response({'url': url}, status=status.HTTP_200_OK)
 
-
-@api_view(['POST'])
-def magic(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.magic)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def begging(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.begging)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def appears(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.disappears, reverse=True)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def time(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.time)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def carlton(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.carlton)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def supa_hot_fire(request):
-
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.supa_hot_fire)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def strut(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.strut)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def hide(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.hide)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def chimp(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.chimp)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def computer_kid(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.computer_kid)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def toast(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.toast)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def fire(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.fire)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def trump(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.trump)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def clapping(request):
-    im = Image.open(request.FILES['file'])
-    converter = ImageEnhance.Color(im)
-    im = converter.enhance(0)
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.clapping)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def thinking(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.thinking)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def mind_blown(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.mind_blown)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def left_hanging(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.left_hanging)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def trapped(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.let_me_in)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def javert(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.javert)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def wrecking_ball(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.wrecking_ball)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)
-
-
-@api_view(['POST'])
-def heres_johnny(request):
-    im = Image.open(request.FILES['file'])
-
-    url = get_generated_gif_url(payload=im, gif_type=gifs_data.heres_johnny)
-
-    return Response({'url': url}, status=status.HTTP_200_OK)

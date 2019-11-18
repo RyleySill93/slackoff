@@ -25,11 +25,13 @@ adjustments = [
     TrackedElementPosition(tracked_element_id=guy.id, height=30)
 ]
 
-clapping = ImageData(
+image_data = ImageData(
     type='clapping',
     frames_data=frames_data,
     tracked_elements=tracked_elements,
     background_image_path='pics/clapping.gif',
     foreground_image_path='pics/clapping_mask.gif',
     adjustments=adjustments,
+    width=500,
+    height=386,
 )

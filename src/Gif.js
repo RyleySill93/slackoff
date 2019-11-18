@@ -1,7 +1,8 @@
 import React, {Component} from "react";
 import { Link } from 'react-router-dom';
 import {withStyles} from "@material-ui/core";
-import Button from './Button';
+import Img from 'react-image'
+import LazyLoad from 'react-lazyload';
 
 const styles = {
     imageHolder: {
@@ -30,15 +31,18 @@ const styles = {
     },
 };
 
-class Image extends Component {
+class Gif extends Component {
     render() {
         const { classes, url, type, width, height } = this.props;
-
 
         return (
             <div className={classes.imageHolder} style={{ minHeight: height / (width / 250) }}>
                 <Link to={ type }>
-                    <img src={url} className={classes.image} />
+                    <div className={classes.image}>
+                        <LazyLoad>
+                            <Img src={url} className={classes.image} />
+                        </LazyLoad>
+                    </div>
                     <div className={classes.buttonHolder}>
                         {/*<Button text="generate" />*/}
                     </div>
@@ -49,4 +53,4 @@ class Image extends Component {
 }
 
 
-export default withStyles(styles)(Image);
+export default withStyles(styles)(Gif);

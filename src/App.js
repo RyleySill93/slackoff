@@ -65,7 +65,7 @@ class Meow extends React.Component {
                 <div/>
             </React.Fragment>
         )
-    }
+    };
 
     render() {
         const uploadFile = (file) => {
@@ -267,26 +267,28 @@ class App extends React.Component {
                         slackoff.
                     </Link>
                 </header>
-                  <Switch>
-                      <Route
-                          path="/:type"
-                          render={routeProps => (
-                              <Detail type={routeProps.match.params.type} />
-                          )}
-                      />
-                      <Route
-                          path="/"
-                          render={() => (
-                              <div className={classes.width}>
-                                  <Masonry>
-                                      {
-                                        this.state.imageUrls.slice(0,3).map(image => <Image url={image.url} type={image.type} />)
-                                    }
-                                  </Masonry>
-                              </div>
-                          )}
-                      />
-                  </Switch>
+                  <div>
+                  </div>
+                  {/*<Switch>*/}
+                  {/*    <Route*/}
+                  {/*        path="/:type"*/}
+                  {/*        render={routeProps => (*/}
+                  {/*            <Detail type={routeProps.match.params.type} />*/}
+                  {/*        )}*/}
+                  {/*    />*/}
+                  {/*    <Route*/}
+                  {/*        path="/"*/}
+                  {/*        render={() => (*/}
+                  {/*            <div className={classes.width}>*/}
+                  {/*                <Masonry>*/}
+                  {/*                    {*/}
+                  {/*                      this.state.imageUrls.slice(0,3).map(image => <Image url={image.url} type={image.type} />)*/}
+                  {/*                  }*/}
+                  {/*                </Masonry>*/}
+                  {/*            </div>*/}
+                  {/*        )}*/}
+                  {/*    />*/}
+                  {/*</Switch>*/}
               </div>
             </Router>
         )
