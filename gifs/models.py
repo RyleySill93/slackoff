@@ -37,9 +37,3 @@ class TrackedElementPosition(models.Model):
     height = models.IntegerField(null=True, blank=True)
     rotation = models.IntegerField(null=True, blank=True)
     brightness = models.IntegerField(null=True, blank=True)
-
-
-class TrackedElementAdjustment(TrackedElementPosition):
-
-    class Meta:
-        proxy = True

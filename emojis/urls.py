@@ -19,10 +19,6 @@ from gifs import views
 
 
 urlpatterns = [
-    path('bobblify/', views.bobblify),
-    path('intensify/', views.intensify),
-    path('detective/', views.detective),
-
     path('make_gif/', views.make_gif),
     path('gifs/', views.get_urls),
     path('gifs/types/', views.get_gif_types),

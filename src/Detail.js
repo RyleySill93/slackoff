@@ -95,7 +95,7 @@ class Detail extends React.Component {
         const { type } = this.props.match.params;
 
         axios.get(`${origin}/types?type=${type}`).then(
-            res => this.setState({ url: res.data.url })
+            res => this.setState({ url: res.data.url, tracked_element_ids: res.data.tracked_element_ids })
         )
     }
 
@@ -115,7 +115,7 @@ class Detail extends React.Component {
             this.setState({ loading: true });
             const formData = new FormData();
             this.state.files.forEach((file, index) => {
-                formData.append(`file/${index}`, file, file.name);
+                formData.append(`${this.state.tracked_element_ids[index]}`, file, file.name);
             });
             formData.append("type", this.props.match.params.type);
 
@@ -158,6 +158,7 @@ class Detail extends React.Component {
                                 <Button onClick={ openDialog }>
                                     CHOOSE A FACE
                                 </Button>
+                                <input type="file" id="upload-photo" hidden onChange={event => uploadFile(event.target.files[0])} />
                             </div>
                             <Button onClick={ doStuff }>
                                 SEND IT
