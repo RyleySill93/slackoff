@@ -10,7 +10,7 @@ import Chip from '@material-ui/core/Chip';
 const styles = {
     detail: {
         display: 'flex',
-        margin: '50px 0px 15px 0px',
+        margin: '20px 0px 15px 0px',
     },
     rightSide: {
         padding: '0px 20px 20px 20px',

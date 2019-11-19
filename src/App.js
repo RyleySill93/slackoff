@@ -68,6 +68,7 @@ class Meow extends React.Component {
     };
 
     render() {
+        const { classes } = props;
         const uploadFile = (file) => {
             this.setState({ file, fileUrl: URL.createObjectURL(file) });
         };
@@ -146,7 +147,7 @@ class Meow extends React.Component {
 
         return (
             <Router>
-              <div className="App">
+              <div className={classes.width}>
                 <header className="header">
                     <Link className="title" to="/">
                         slackoff.
